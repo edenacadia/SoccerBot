@@ -1,0 +1,177 @@
+/*
+ Eden McEwen
+ April 20, 2015
+ Arr 5 robotics
+ 
+ Smart_Soccer.ino by Eden McEwen on May 21
+ 
+ A robot that senses walls with sonic sensors, 
+table edges with linefollowers, and while avoiding those, 
+uses three IR sensors to locate and move toward a ball
+emmiting infred light
+ */
+ 
+ /* 
+ Copyright Eden McEwen 2015.  All Rights Reserved.
+ No part of these contents may be reproduced, copied, modified or adapted, 
+ without the prior written consent of the author, 
+ unless when used for educational and non-profit purposes.
+*/
+
+
+//Sets up right end left pins for Sonic sensots
+const int echoR = A5 ;
+const int trigR = 5 ;
+const int trigL = 6;
+const int echoL = A6;
+
+void AvoidObjects(){
+  int RightWall = distance(trigR, echoR);   //sonic sensor dist
+  int LeftWall = distance(trigL, echoL);   
+  int valueR = analogRead(linePinR);     //Line follower values
+  int valueL = analogRead(linePinL);
+
+  if(valueL > 200){   //If the left sensor spots something, turn ect..
+    backStep();
+    leftStepHard();
+  }
+  else if(valueR > 200){
+    backStep();
+    rightStepHard();
+  }
+  else if(RightWall < 5){
+    rightStepHard();
+  }
+  else if(LeftWall < 5){
+    leftStepHard();
+  }
+  else{
+    smartSoccer();
+  } 
+}
+
+
+void smartSoccer(){
+  int bvR = analogRead(ballR);   //right, center, and right IR values
+  int bvL = analogRead(ballL);
+  int bvC = analogRead(ballC);
+  int nul=1023;                 //Largest value for IR
+  int i = 0;
+  int rightS = highR; //1175   Value for Servo
+  int leftS = highL; //2000
+
+  int Red = map(bvR, 0, 1023, 255, 0);    ///Mapping colors to sensors
+  int Blue = map(bvC, 0, 1023, 255, 0);  // and distance to intensity of light
+  int Green = map(bvL, 0, 1023, 255, 0);
+
+  myRGB(Red, Green, Blue);      //code for RGB light
+
+  //if all null do something
+  if(bvC==nul && bvR==nul && bvL==nul){   ///Ball isn't seen
+    notFound();
+  } 
+  else if(bvC<=bvR && bvC<=bvL){   ///Central value is lowest (ball is closest there)
+    turn =3;
+    i = 0;                          // indicator of lowest value
+    turnMod(i,bvR, bvL, bvC);      // gives the read values
+  }
+  else if(bvL<bvC && bvL<bvR){    ///Left value is lowest (ball is closest there)
+    turn = 1;
+    i = 1;
+    turnMod(i,bvR, bvL, bvC);
+  }
+  else{                          ///Right value is lowest by default (ball is closest there)
+    turn=2;
+    i = 2;
+    turnMod(i,bvR, bvL, bvC);
+  }
+
+}
+
+
+//////////////smart MOVEments\\\\\\\\\\\\\\ 
+
+void turnMod(int i,int bvR,int bvL,int bvC){
+  int Rslow[] = {                //Arrays of servo accessed by i
+    1300, 1300, 1500  };         //Right servo, slowest speed, L,R,C
+  int Lslow[] = {
+    1720, 1500, 1720  };          //Left servo, slowest speed, L,R,C
+
+  int Rfast[] = {
+    1175, 1175, 1300  };          //Right servo, fastest speed, L,R,C
+  int Lfast[] = {
+    2000, 1720, 2000  };          //Left servo, fastest speed, L,R,C
+
+  int lowVal[] = {
+    bvC,bvL, bvR  };
+
+
+  int servoR= map(lowVal[i], 20, 1022, Rslow[i], Rfast[i]);  ///Mapping right servo speed to the distance of the light
+  int servoL= map(lowVal[i], 20, 1022, Lslow[i], Lfast[i]);
+
+  int centerTurn = map( (bvR-bvL), 1023, -1023, 0, 100);   ///mapping the potential differences in values to a range 0-100
+  int rightTurn = map( (bvR-bvC), 1023, 1, 0, 100);
+  int leftTurn = map( (bvL-bvC), 1, 1023, 0, 100);
+
+  int difVal[] = {
+    centerTurn, leftTurn, rightTurn  };
+
+  int addR = map(difVal[i],1, 100, 20, -20);   ///depending on which i, diffrent turn additions
+  int addL = map(difVal[i],1, 100, -20, 20);
+
+  int finalR = servoR + addR; ///distance speed added to turn additions
+  int finalL = servoL + addL;
+
+  soccerStep(finalR,finalL); // final motion
+}
+
+//////////////BASIC MOVE\\\\\\\\\\\\\\ 
+
+void soccerStep(int R, int L){
+  servoMove(servoPinR, R);
+  servoMove(servoPinL, L);
+  delay(20); 
+}
+
+//////////////NO VALUE FOUND\\\\\\\\\\\\\\ 
+
+void notFound(){
+  if(turn == 3){     //This is if the last value spotted was center (ball is rolling fast away)
+    myRGB(0, 0, 255);
+    forwardStep();
+  }
+  else if(turn==1){   ///Last value spotted was on the right
+  myRGB(0, 255, 0);
+  rightStepHard();  
+  }
+  else{
+    myRGB(255, 0, 0); ///Last value spotted was on the lef221222222
+    leftStepHard();
+  }
+}  
+
+
+//////////////FOR SONIC SENSORS\\\\\\\\\\\\\\ 
+
+int distance(int trigPin,int echoPin)
+{
+  pinMode(trigPin, OUTPUT);
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);  
+
+  pinMode(echoPin, INPUT);
+  long duration = pulseIn(echoPin, HIGH);
+
+  return duration / 29 / 2;
+}
+
+
+
+
+
+
+
+
