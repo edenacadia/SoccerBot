@@ -1,0 +1,193 @@
+/*
+Eden McEwen
+ Arr 5
+ February 12, 2015
+ */
+
+const byte servoPinR = 3;
+const byte servoPinL = 4;
+int highR = 1175;
+int highL = 2000;
+//int medR = ;
+//int medl = ;
+//int lowR = ;
+//int lowL = ;
+
+const int s1 = 9;
+const int s2 = 10;
+const int s3 = 11;
+const int s4 = 12;
+
+const int ballC= A0;
+const int ballR = A1;
+const int ballL = A2;
+int turn = 1;
+
+const int linePinR = A3;
+const int linePinL = A4;
+
+
+
+//////////////LED///////
+const int redPin = A9;
+const int bluePin = A8;
+const int greenPin = A7;
+
+
+void setup(){
+  //-------Moving-------//
+  pinMode(servoPinL, OUTPUT);
+  pinMode(servoPinR, OUTPUT);
+  pinMode(linePinL, INPUT);
+  pinMode(linePinR, INPUT);
+
+  //-------Soccer-------//
+  pinMode(ballL, INPUT);
+  pinMode(ballR, INPUT);
+  pinMode(ballC, INPUT);
+
+  //-------TableTop-------//
+  //  pinMode(distPin, INPUT);
+  //  pinMode(turnL, OUTPUT);
+  //  pinMode(turnR, OUTPUT);
+
+  //-------LED-------//
+  pinMode(bluePin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(redPin, OUTPUT);
+
+  //-------Button-------//
+  pinMode(s1, INPUT);
+  pinMode(s2, INPUT);
+  pinMode(s3, INPUT);
+  pinMode(s4, INPUT);
+
+}
+
+void loop(){
+  AvoidObjects();
+}
+
+
+
+
+  /////////////////// NUMBERED STEPS \\\\\\\\\\\\\\\\\\\\\\\\\\
+
+  void forward(int stp){
+    for(int i= 0; i<stp; i++){
+      forwardStep();
+    }
+  }
+
+void back(int stp){
+  for(int i= 0; i<stp; i++){
+    backStep();
+  }
+}
+
+
+//////////// TURN STEPS \\\\\\\\\\\
+
+
+void turnRight(int stp){
+  for(int i= 0; i<stp; i++){
+    rightStep();
+  }
+}
+
+void turnRightHard(int stp){
+  for(int i= 0; i<stp; i++){
+    rightStepHard();
+  }
+}
+
+void turnLeftHard(int stp){
+  for(int i= 0; i<stp; i++){
+    leftStepHard();
+  }
+}
+
+void turnLeft(int stp){
+  for(int i= 0; i<stp; i++){
+    leftStep();
+  }
+}
+
+/////////////////////////// specific turn comands \\\\\\\\\\\\\\\\\\\\\\\\\\
+
+void turnRight90(){
+  turnRightHard(25);
+  delay(2000);
+}
+
+void turnLeft90(){
+  turnRightHard(25);
+  delay(2000);
+}
+
+void turn180(){
+  turnRightHard(60);
+  delay(2000);
+}
+
+/////////////////////////// SINGLE STEPS \\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+void forwardStep(){
+  servoMove(servoPinR, highR);
+  servoMove(servoPinL, highL);
+  delay(20); 
+}
+
+void backStep(){
+  servoMove(servoPinR, highL);
+  servoMove(servoPinL, highR);
+  delay(20); 
+} 
+
+
+//////////// TURN STEPS \\\\\\\\\\\
+
+
+void leftStepHard(){
+  servoMove(servoPinL, highL);
+  servoMove(servoPinR, highL);
+  delay(20); 
+}
+
+void leftStep(){
+  servoMove(servoPinL, highL);
+  delay(20); 
+}
+
+void rightStepHard(){
+  servoMove(servoPinR, highR);
+  servoMove(servoPinL, highR);
+  delay(20); 
+}
+
+void rightStep(){
+  servoMove(servoPinR, highR);
+  delay(20); 
+}
+
+/////////////////////////// servo move (really basic thing) \\\\\\\\\\\\\\\\\\\\\\\\\\
+
+void servoMove(byte pinNum, int pulseWidth){
+  digitalWrite(pinNum, HIGH);
+  delayMicroseconds(pulseWidth);
+  digitalWrite(pinNum, LOW); 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
